@@ -19,7 +19,7 @@ project "imgui"
         "imstb_truetype.h"
     }
 
-    staticruntime "off"
+    staticruntime "on"
     systemversion "latest"
 
     filter "configurations:Debug"
