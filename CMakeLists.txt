@@ -2,30 +2,27 @@ cmake_minimum_required(VERSION 3.16.3)
 
 project(imgui)
 
-option(IMGUI_BACKEND_GLFW "Includes glfw backend in compiled sources." OFF)
-
-option(IMGUI_BACKEND_OPENGL "Includes OpenGL backend in compiled sources." OFF)
-option(IMGUI_BACKEND_VULKAN "Includes Vulkan backend in compiled sources." OFF)
+option(IMGUI_BACKEND_GLFW "Wether or not to include Glfw backend implementation. Requires linking agains Glfw." OFF)
+option(IMGUI_BACKEND_VULKAN "Wether or not to include Vulkan backend implementation. Requires linking agains Vulkan." OFF)
 
 add_library(${PROJECT_NAME})
 
 file(GLOB headers *.h)
 file(GLOB sources *.cpp)
 
-set(implFiles)
+if(IMGUI_BACKEND_VULKAN)
+    file(GLOB gapi_backend backends/imgui_impl_vulkan.cpp)
+endif(IMGUI_BACKEND_VULKAN)
 
 if(IMGUI_BACKEND_GLFW)
-    list(APPEND implFiles backends/imgui_impl_glfw.cpp)
+    file(GLOB window_backend backends/imgui_impl_glfw.cpp)
+endif(IMGUI_BACKEND_GLFW)
+
+target_sources(${PROJECT_NAME} PRIVATE ${headers} ${sources} ${gapi_backend} ${window_backend})
+
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    target_link_libraries(imgui PRIVATE ${X11_LIBRARIES})
 endif()
 
-if(IMGUI_BACKEND_OPENGL)
-    list(APPEND implFiles backends/imgui_impl_opengl3.cpp)
-endif()
-
-if(IMGUI_BACKEND_VULKAN)
-    list(APPEND implFiles backends/imgui_impl_vulkan.cpp)
-endif()
-
-target_include_directories(${PROJECT_NAME} PUBLIC . ./backends)
-
-target_sources(${PROJECT_NAME} PRIVATE ${headers} ${sources} ${implFiles})
+target_include_directories(${PROJECT_NAME} PUBLIC SYSTEM . ./backends)
