@@ -4,6 +4,7 @@ project(imgui)
 
 option(IMGUI_BACKEND_GLFW "Wether or not to include Glfw backend implementation. Requires linking agains Glfw." OFF)
 option(IMGUI_BACKEND_VULKAN "Wether or not to include Vulkan backend implementation. Requires linking agains Vulkan." OFF)
+option(IMGUI_VULKAN_NO_PROTOTYPES "If enabled function pointers are not fetched autmatically. Requiures manually providing them with ImGui_ImplVulkan_LoadFunctions" OFF)
 
 add_library(${PROJECT_NAME})
 
@@ -19,6 +20,10 @@ if(IMGUI_BACKEND_GLFW)
 endif(IMGUI_BACKEND_GLFW)
 
 target_sources(${PROJECT_NAME} PRIVATE ${headers} ${sources} ${gapi_backend} ${window_backend})
+
+if(IMGUI_VULKAN_NO_PROTOTYPES)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+endif(IMGUI_VULKAN_NO_PROTOTYPES)
 
 if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)
